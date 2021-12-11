@@ -40,15 +40,29 @@ The ```world``` node publishes messages on the ```base_scan``` topic. Messages a
 It also subscribes to the topic ```cmd_vel``` to impose a linear and angular velocity to the robot along the three axis. It receives ```Twist``` type messages from ```geometry_msgs``` package.
 
 ## Controller
-The controller communicates with other nodes via messages.
+The controller communicates with the ```world``` node via messages.
 
-It subscribes to ```base_scan``` the topic to receive the wall's position and to the ```velocity``` topic to receive the new velocity of the robot via a ```Velocity``` type message.
-It also publishes on the topic ```cmd_vel``` to set the velocity of the robot in the ```wolrd``` node.
+It subscribes to ```base_scan``` the topic to receive the wall's position and it publishes on the topic ```cmd_vel``` to set the velocity of the robot in the ```wolrd``` node.
+
+It also  implements the ```Service.srv```: taking a command from the user, it decides what will be the velocity of the robot, taking in account min and max velocities.
 
 The operation of this node can be described by the following pseudocode:
 ```pseudocode
-if(there is a message on topic velocity)
-   velocity = msg->velocity
+ min_vel = minimum velocity
+ max_vel = maximum velocity
+ vel = 0
+   
+if(the service is required)
+   com = command from request
+
+   if(vel < max_vel && com == '+')
+      encrease vel
+   if(vel > min_vel && com == '-')
+      decrease vel
+   if(com == 'r')
+      vel = 0
+      
+   send vel as new velocity in the response
    
 if(there is a message on topic base_scan)
    array = scan result
@@ -65,34 +79,10 @@ if(there is a message on topic base_scan)
       else
          turn right
    else
-      go straight on with velocity = velocity
+      go straight on with velocity = vel
    
    publish on topic cmd_vel linear and angular velocities decided
 
-```
-## Server
-It decides what are the minimum and the maximum velocity that the robot can take.
-Provviding it the actual velocity and the command from the user, it decides what will be the new velocity.
-It implements the service defined in ```Service.srv```.
-
-In pseudocode:
-```pseudocode
-
-min_vel = minimum velocity
-max_vel = maximum velocity
-
-vel = actual velocity from request
-com = command from request
-
-if(vel < max_vel && com == '+')
-   encrease vel
-if(vel > min_vel && com == '-')
-   decrease vel
-if(com == 'r')
-   vel = 0
-   
-return vel as new velocity in the service response
-publish vel on velocity topic
 ```
 
 ## Interface
@@ -123,11 +113,13 @@ key = r
 while(roscore is running)
    key = command read from user
    
-   if(key is a valid command)
+   if(key == q)
+      kill this node
+   else if(key is another valid command)
       send a request to Service with actual_velocity = velocity and command = key
       if(key == r)
          send a request to Empty service
-      tmp = new_velocity in Service response
+         tmp = new_velocity in Service response
       if(tmp == 0 && velocity == 0)
          print(Velocity can't be decreased)
       else if(tmp == velocity && tmp == 10)
@@ -140,6 +132,9 @@ while(roscore is running)
   else
      print(invalid command)
 ```
+## Service
+It is a custom service described in the file ```Service.srv``` in the ```srv``` folder.
+It takes a command (char) and gives the new_velocity (float32).
 
 ## Possible improvements
 The controller can be improved by making the execution of the curves more precise and trying to modulate the speed better.
