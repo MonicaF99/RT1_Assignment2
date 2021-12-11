@@ -87,10 +87,10 @@ if(there is a message on topic base_scan)
 
 ## Interface
 The user interface print on the screen a menu with three choices:
-* + : encrease velocity
-* - : decrease velocity
-* r : reset the system
-* q : quit
+* "+" : encrease velocity
+* "-" : decrease velocity
+* "r" : reset the system
+* "q" : quit
 
 This node uses two services:
 *  ```Empty``` type of service in the ```std_srvs``` package. It is very useful to reset the position of the robot if the user pressed 'r'.
