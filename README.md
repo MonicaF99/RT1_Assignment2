@@ -116,7 +116,7 @@ while(roscore is running)
    if(key == q)
       kill this node
    else if(key is another valid command)
-      send a request to Service with actual_velocity = velocity and command = key
+      send a request to Service with command = key
       if(key == r)
          send a request to Empty service
          tmp = new_velocity in Service response
